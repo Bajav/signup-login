@@ -12,13 +12,13 @@ const port = 3000;
 app.use(bodyParser.urlencoded({extended:true}));
 app.set("view engine","ejs");
 
-app.get("/",(req, res)=>{});
-app.get("/",(req, res)=>{});
-app.get("/",(req, res)=>{});
+app.get("/",(req, res)=>{res.render("landingPagce")});
+app.get("/signUp",(req, res)=>{res.render("signUp",{dontMatch:""})});
+app.get("/logIn",(req, res)=>{res.render("logIn",{dontMatch:""})});
 
-app.post("/",(req, res)=>{});
-app.post("/",(req, res)=>{});
-app.post("/",(req, res)=>{});
+app.post("/signUp",(req, res)=>{res.render("dashBoard")});
+app.post("/logIn",(req, res)=>{res.render("dashBoard")});
+
 app.listen(port, ()=>{
     console.log("express server is running");
 });
