@@ -8,7 +8,8 @@ const passportLocal = require("passport-local-mongoose");
 const session = require("session");
 const port = 3000;
 
-
+app.use(express.static("public"));
+app.use(express.static("public/styles"));
 app.use(bodyParser.urlencoded({extended:true}));
 app.set("view engine","ejs");
 
