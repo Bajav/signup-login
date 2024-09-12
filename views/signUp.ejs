@@ -5,18 +5,14 @@
     <title>Document</title>
     <!-- <link rel="stylesheet" href="./styles.css"> -->
     <link rel="stylesheet" href="../public/styles.css">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
 </head>
 <body>
-    <div >
+    <div class="signUp">
     <h1 class="font-medium text-2xl text-center">welcome please sign up on our App</h1>
     <h4><%= dontMatch %></h4>
     <section>
-        <form action="/" method="post">
-            <div class="inputs flex flex-col">
-                <label for="first name">first name</label>
-                <input class="border-solid border-neutral-950" type="text" name="firstName" id="firstName" placeholder="please enter first name">
-            </div>
+        <form action="/signUp" method="post">
             <div class="inputs flex flex-col">
                 <label for="first name">first name</label>
                 <input type="text" name="firstName" id="firstName" placeholder="please enter first name">

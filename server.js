@@ -1,25 +1,36 @@
-const bodyParser = require("body-parser");
 const express = require("express");
+const bodyParser = require("body-parser");
 const ejs = require("ejs");
-const mongoose = require("mongoose");
+
 const app = express();
-const passport = require("passport");
-const passportLocal = require("passport-local-mongoose");
-const session = require("session");
 const port = 3000;
 
-app.use(express.static("public"));
-app.use(express.static("public/styles"));
 app.use(bodyParser.urlencoded({extended:true}));
-app.set("view engine","ejs");
+app.set("view engine", "ejs");
+app.use(express.static("public"));
 
-app.get("/",(req, res)=>{res.render("landingPagce")});
-app.get("/signUp",(req, res)=>{res.render("signUp",{dontMatch:""})});
-app.get("/logIn",(req, res)=>{res.render("logIn",{dontMatch:""})});
-
-app.post("/signUp",(req, res)=>{res.render("dashBoard")});
-app.post("/logIn",(req, res)=>{res.render("dashBoard")});
-
-app.listen(port, ()=>{
-    console.log("express server is running");
+// routes
+// home
+app.get("/",(req, res)=>{
+    res.render("landingPage");
+});
+// login
+app.get("/login",(req, res)=>{
+    res.render("logIn",{dontMatch:""});
+});
+// signUp
+app.get("/signUp",(req, res)=>{
+    res.render("signUp",{dontMatch:""});
+});
+// handle forms
+app.post("/login",(req,res)=>{
+    console.log(req.body);
+    res.render("logIn",{dontMatch:""});
+});
+app.post("/signUp",(req,res)=>{
+    console.log(req.body);
+    res.render("signUp",{dontMatch:""});
+});
+app.listen(port,()=>{
+    console.log("server running on port 3000");
 });
