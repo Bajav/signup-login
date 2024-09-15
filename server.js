@@ -2,100 +2,86 @@ require('dotenv').config()
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
+const port = 3000;
 const mongoose = require("mongoose");
 const passport = require("passport");
 const sesseion = require("express-session");
 const passportLocalMongoose = require("passport-local-mongoose");
-
-// const md5 = require("md5");
-// const bcrypt = require("bcrypt");
-
-const saltRounds = process.env.SALT_ROUNDS;
 const app = express();
-const port = 3000;
 
-// 01 connection url
-mongoose.connect("mongodb://localhost:27017/TKTUsers");
-// 02 creating schema
-const userSchema = new mongoose.Schema({
-    fName:String,
-    lName:String,
-    email:String,
-    password:String,
-    rePassword:String
-}); 
-// 01 level encryption
-// userSchema.plugin(encrypt,{secret:process.env.SECRETS, encryptedFields:["password", "rePassword"]});
-// 03 creating collection
+// setting up use
+app.use(express.static("public"));
+app.use(bodyParser.urlencoded({extended:true}));
+app.set("view engine", "ejs");
 
-// setting up sessions.
+//  ---setting up session---
+// 01 set up session
 app.use(sesseion({
-    secret:"",
+    secret:"I LOVE ALLAH, HE IS THE ONLY GOD",
     resave:false,
     saveUninitialized:false
 }));
+// 02 intitialize passport
 app.use(passport.initialize());
 app.use(passport.session());
-userSchema.plugin(passportLocalMongoose);
-
-const Users = new mongoose.model("Users", userSchema);
-// 04 inserting new data
-app.use(bodyParser.urlencoded({extended:true}));
-app.use(express.static("public"));
-app.set("view engine", "ejs");
-
-function passwordsMatch(password, rePassword) {
-    return password === rePassword;
-}
-// routes
-// home
-app.get("/",(req, res)=>{
+// 03 initialize schema plugIn
+mongoose.plugin(passportLocalMongoose);
+// setting up db
+// 01 set up connection url
+mongoose.connect("mongodb://127.0.0.1:27017/TKTDB");
+// 02 set up schema
+const userSchema = new mongoose.Schema({
+    fName:String,
+    lName:String,
+    email: String,
+    password:String,
+});
+// 04 Serialize and Deserialize cookie
+// 03 set up model / collection
+const User = new mongoose.model("User", userSchema);
+// server routes
+app.get("/",(req,res)=>{
     res.render("landingPage");
 });
-// login
-app.get("/login",(req, res)=>{
+app.get("/login",(req,res)=>{
     res.render("logIn",{dontMatch:""});
 });
-// signUp
-app.get("/signUp",(req, res)=>{
+app.get("/signUp",(req,res)=>{
     res.render("signUp",{dontMatch:""});
 });
-// handle forms
-
+// handling forms
 app.post("/signUp",(req,res)=>{
-    const {fName,lName, email, password, rePassword}= req.body;
-        const User = new Users({
+    const {fName, lName, email, password, rePassword} = req.body;
+    if(password === rePassword){
+        const user = new User({
             fName:fName,
             lName:lName,
-            email:email,
-            password:hash,
-            rePassword:hash
+            email: email,
+            password:password,
         });
-        if(User.password === User.rePassword){
-            console.log(password, rePassword);
-            User.save();
-            res.send("user saved to db");
-        }else{
-            res.render("signUp",{dontMatch:"passwords dont match"});
-        } 
+        user.save();
+        res.send("user saved succesfully to db");
+    }else{
+        res.render("signUp",{dontMatch:"sorry your passwords dont match try again"});   
+    }
 });
-app.post("/login",async (req,res)=>{
-    const {email, password}= req.body;
-    // try{
-    //     const foundUser = await Users.findOne({email:email});
-    //   if(foundUser){
-    //     console.log(foundUser);
-    //     if(foundUser.password === password ){
-    //         console.log("user found");
-    //         res.status(200).send("user found");
-    //     }else{
-    //         console.log("pussy");
-    //         res.render("logIn",{dontMatch:"user password is wrong"});
-    //     }
-    //   }else{res.status(401).render("logIn",{dontMatch:"no user found with following email"});;
+app.post("/login",async(req,res)=>{
+    const {email, password} = req.body;
 
-    //   }
-    // }catch(err){console.log(err)};
+    try{
+        const foundUser = await User.findOne({email:email});
+        if(foundUser){
+            if(foundUser.password === password){
+                res.send("user logged in successfully");
+            }else{
+                res.render("logIn",{dontMatch:"passwords dont match"});   
+            }
+        }else{
+            res.render("logIn",{dontMatch:"no user found with email address"});
+        }
+    }catch(err){
+        console.log(err);
+    }
 });
 app.listen(port,()=>{
     console.log(" server running on http://localhost:3000/");
