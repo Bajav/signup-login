@@ -5,7 +5,7 @@ const ejs = require("ejs");
 const port = 3000;
 const mongoose = require("mongoose");
 const passport = require("passport");
-const sesseion = require("express-session");
+const session = require("express-session");
 const passportLocalMongoose = require("passport-local-mongoose");
 const app = express();
 
@@ -15,17 +15,13 @@ app.use(bodyParser.urlencoded({extended:true}));
 app.set("view engine", "ejs");
 
 //  ---setting up session---
-// 01 set up session
-app.use(sesseion({
-    secret:"I LOVE ALLAH, HE IS THE ONLY GOD",
+app.use(session({
+    secret:"I LOVE ALLAH",
     resave:false,
     saveUninitialized:false
 }));
-// 02 intitialize passport
 app.use(passport.initialize());
 app.use(passport.session());
-// 03 initialize schema plugIn
-mongoose.plugin(passportLocalMongoose);
 // setting up db
 // 01 set up connection url
 mongoose.connect("mongodb://127.0.0.1:27017/TKTDB");
@@ -36,7 +32,8 @@ const userSchema = new mongoose.Schema({
     email: String,
     password:String,
 });
-// 04 Serialize and Deserialize cookie
+userSchema.plugin(passportLocalMongoose);
+
 // 03 set up model / collection
 const User = new mongoose.model("User", userSchema);
 // server routes
@@ -59,7 +56,7 @@ app.post("/signUp",(req,res)=>{
             email: email,
             password:password,
         });
-        user.save();
+        // user.save();
         res.send("user saved succesfully to db");
     }else{
         res.render("signUp",{dontMatch:"sorry your passwords dont match try again"});   
