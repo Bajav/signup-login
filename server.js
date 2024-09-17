@@ -36,6 +36,9 @@ userSchema.plugin(passportLocalMongoose);
 
 // 03 set up model / collection
 const User = new mongoose.model("User", userSchema);
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 // server routes
 app.get("/",(req,res)=>{
     res.render("landingPage");
@@ -46,40 +49,55 @@ app.get("/login",(req,res)=>{
 app.get("/signUp",(req,res)=>{
     res.render("signUp",{dontMatch:""});
 });
+app.get("/dashBoard",(req, res)=>{
+    res.render("dashBoard");
+    if(req.isAuthenticated()){
+     res.render("dashBoard");   
+    }else{
+        res.redirect("login");
+    }
+});
 // handling forms
 app.post("/signUp",(req,res)=>{
     const {fName, lName, email, password, rePassword} = req.body;
-    if(password === rePassword){
-        const user = new User({
-            fName:fName,
-            lName:lName,
-            email: email,
-            password:password,
-        });
-        // user.save();
-        res.send("user saved succesfully to db");
-    }else{
-        res.render("signUp",{dontMatch:"sorry your passwords dont match try again"});   
+    if(password !== rePassword){
+        res.render("signUp",{dontMatch:"passwords dont match"});
     }
+    // authenticating sessions
+    User.register({ fName : fName ,lName: lName ,email: email,}, password, (err, user) => {
+        if (err) {
+            console.log(err);
+            if (err.name === "UserExistsError") {
+                // If the user already exists, render the signup page with an error message
+                return res.status(400).render("signUp", { dontMatch: "A user with this email is already registered." });
+            } else {
+                return res.status(200).redirect("/dashBoard");
+            }
+        } else {
+            passport.authenticate("local")(req, res, () => {
+                res.redirect("/");
+            });
+        }
+    });
+
 });
 app.post("/login",async(req,res)=>{
     const {email, password} = req.body;
-
-    try{
-        const foundUser = await User.findOne({email:email});
-        if(foundUser){
-            if(foundUser.password === password){
-                res.send("user logged in successfully");
-            }else{
-                res.render("logIn",{dontMatch:"passwords dont match"});   
-            }
-        }else{
-            res.render("logIn",{dontMatch:"no user found with email address"});
-        }
-    }catch(err){
-        console.log(err);
-    }
+    
 });
 app.listen(port,()=>{
     console.log(" server running on http://localhost:3000/");
 });
+
+// if(password === rePassword){
+//     const user = new User({
+//         fName:fName,
+//         lName:lName,
+//         email: email,
+//         password:password,
+//     });
+//     // user.save();
+//     res.send("user saved succesfully to db");
+// }else{
+//     res.render("signUp",{dontMatch:"sorry your passwords dont match try again"});   
+// }
